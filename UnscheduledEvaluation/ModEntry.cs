@@ -16,13 +16,31 @@ public class ModEntry : Mod
 
     private void OnAssetRequested(object? sender, AssetRequestedEventArgs e)
     {
-        if (e.NameWithoutLocale.IsEquivalentTo("Strings/Locations"))
+        if (e.NameWithoutLocale.IsEquivalentTo("Strings/Locations")) PatchStringsLocations(e);
+        if (e.NameWithoutLocale.IsEquivalentTo("Data/Events/Farm")) PatchDataEventsFarm(e);
+    }
+
+    private static void PatchStringsLocations(AssetRequestedEventArgs e)
+    {
+        e.Edit(asset =>
         {
-            e.Edit(asset =>
+            var data = asset.AsDictionary<string, string?>().Data;
+            data["Farm_GrandpaNote"] = "Edited in DLL\n\n" + data["Farm_GrandpaNote"];
+        });
+    }
+
+    private static void PatchDataEventsFarm(AssetRequestedEventArgs e)
+    {
+        e.Edit(asset =>
+        {
+            var data = asset.AsDictionary<string, string?>().Data;
+            const string showCandleUpdate = "2146991/y 3/H";
+            if (data[showCandleUpdate] != null)
             {
-                var data = asset.AsDictionary<string, string>().Data;
-                data["Farm_GrandpaNote"] = "Edited in DLL\n\n" + data["Farm_GrandpaNote"];
-            });
-        }
+                // This event is marked unseen by Event.DefaultCommands.GrandpaEvaluation2
+                data["2146991/e 558291/H"] = data[showCandleUpdate];
+                data[showCandleUpdate] = null;
+            }
+        });
     }
 }

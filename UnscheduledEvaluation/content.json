@@ -3,14 +3,6 @@
   "Changes": [
     {
       "Action": "EditData",
-      "Target": "Data/Events/Farm",
-      "Entries": {
-        "2146991/y 3/H": null,
-        "2146991/e 558291/H": "spring_day_ambient/8 7/farmer 64 16 2/broadcastEvent/globalFade/viewport 8 7 clamp true/pause 3000/grandpaCandles/pause 3000/end"
-      }
-    },
-    {
-      "Action": "EditData",
       "Target": "Data/Events/FarmHouse",
       "Entries": {
         "558291/y 3/H": null,
