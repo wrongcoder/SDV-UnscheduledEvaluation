@@ -11,12 +11,18 @@ public class ModEntry : Mod
 {
     public override void Entry(IModHelper helper)
     {
-        helper.Events.Input.ButtonPressed += OnButtonPressed;
+        helper.Events.Content.AssetRequested += OnAssetRequested;
     }
 
-    private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
+    private void OnAssetRequested(object? sender, AssetRequestedEventArgs e)
     {
-        if (!Context.IsWorldReady) return;
-        Monitor.Log($"{Game1.player.Name} pressed {e.Button}.", LogLevel.Debug);
+        if (e.NameWithoutLocale.IsEquivalentTo("Strings/Locations"))
+        {
+            e.Edit(asset =>
+            {
+                var data = asset.AsDictionary<string, string>().Data;
+                data["Farm_GrandpaNote"] = "Edited in DLL\n\n" + data["Farm_GrandpaNote"];
+            });
+        }
     }
 }
