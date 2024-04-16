@@ -10,14 +10,21 @@ namespace UnscheduledEvaluation;
 
 public class ModEntry : Mod
 {
+    private ModConfig? _config;
+
     public override void Entry(IModHelper helper)
     {
+        _config = Helper.ReadConfig<ModConfig>();
+
         var harmony = new Harmony(ModManifest.UniqueID);
-        harmony.Patch(
-            original: AccessTools.Method(typeof(Farm), nameof(Farm.checkAction)),
-            prefix: new HarmonyMethod(typeof(AlwaysActiveShrinePatch), nameof(AlwaysActiveShrinePatch.Prefix)),
-            postfix: new HarmonyMethod(typeof(AlwaysActiveShrinePatch), nameof(AlwaysActiveShrinePatch.Postfix))
-        );
+        if (_config.EnableAlwaysActiveShrinePatch)
+        {
+            harmony.Patch(
+                original: AccessTools.Method(typeof(Farm), nameof(Farm.checkAction)),
+                prefix: new HarmonyMethod(typeof(AlwaysActiveShrinePatch), nameof(AlwaysActiveShrinePatch.Prefix)),
+                postfix: new HarmonyMethod(typeof(AlwaysActiveShrinePatch), nameof(AlwaysActiveShrinePatch.Postfix))
+            );
+        }
 
         helper.Events.Content.AssetRequested += OnAssetRequested;
     }
@@ -29,12 +36,16 @@ public class ModEntry : Mod
         if (e.NameWithoutLocale.IsEquivalentTo("Data/Events/FarmHouse")) PatchDataEventsFarmHouse(e);
     }
 
-    private static void PatchStringsLocations(AssetRequestedEventArgs e)
+    private void PatchStringsLocations(AssetRequestedEventArgs e)
     {
         e.Edit(asset =>
         {
             var data = asset.AsDictionary<string, string>().Data;
-            data["Farm_GrandpaNote"] = "Edited in DLL\n\n" + data["Farm_GrandpaNote"];
+            var grandpaNote = _config?.GrandpaNote;
+            if (grandpaNote != null)
+            {
+                data["Farm_GrandpaNote"] = grandpaNote;
+            }
         });
     }
 
