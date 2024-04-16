@@ -1,4 +1,5 @@
 using System;
+using HarmonyLib;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
@@ -11,6 +12,13 @@ public class ModEntry : Mod
 {
     public override void Entry(IModHelper helper)
     {
+        var harmony = new Harmony(ModManifest.UniqueID);
+        harmony.Patch(
+            original: AccessTools.Method(typeof(Farm), nameof(Farm.checkAction)),
+            prefix: new HarmonyMethod(typeof(AlwaysActiveShrinePatch), nameof(AlwaysActiveShrinePatch.Prefix)),
+            postfix: new HarmonyMethod(typeof(AlwaysActiveShrinePatch), nameof(AlwaysActiveShrinePatch.Postfix))
+        );
+
         helper.Events.Content.AssetRequested += OnAssetRequested;
     }
 
