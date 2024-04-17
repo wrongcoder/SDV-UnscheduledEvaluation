@@ -10,6 +10,8 @@ namespace UnscheduledEvaluation;
 
 public class ModEntry : Mod
 {
+    private const string Evaluation1Mail = "UnscheduledEvaluation-SawEvaluation1";
+
     private ModConfig? _config;
 
     public override void Entry(IModHelper helper)
@@ -73,10 +75,11 @@ public class ModEntry : Mod
             const string origEvaluation1Key = "558291/y 3/H";
             const string newEvaluation1Key = "558291/e 321777/t 600 620/H";
             if (_config?.SkippableEvaluation1 ?? false) PrependEventCommand(data, origEvaluation1Key, "skippable");
+            PrependEventCommand(data, origEvaluation1Key, $"mail {Evaluation1Mail}");
             RenameKey(data, origEvaluation1Key, newEvaluation1Key);
             // Subsequent Grandpa evaluations: 558292
             const string origEvaluation2Key = "558292/e 321777/t 600 620/H";
-            const string newEvaluation2Key = "558292/e 321777/t 600 620/e 558291/H";
+            const string newEvaluation2Key = $"558292/e 321777/t 600 620/Hn {Evaluation1Mail}/H";
             if (_config?.SkippableEvaluation2 ?? false) PrependEventCommand(data, origEvaluation2Key, "skippable");
             RenameKey(data, origEvaluation2Key, newEvaluation2Key);
             // Diamond placed on shrine marks 321777 as seen
@@ -87,7 +90,6 @@ public class ModEntry : Mod
     {
         var oldKeyMissing = !data.ContainsKey(oldKey);
         var newKeyExists = data.ContainsKey(newKey);
-
         if (oldKeyMissing || newKeyExists)
         {
             var m = $"Skipping rename \"{oldKey}\" (missing={oldKeyMissing}) to \"{newKey}\" (exists={newKeyExists})";
