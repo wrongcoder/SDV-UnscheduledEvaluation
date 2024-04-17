@@ -19,7 +19,7 @@ public class ModEntry : Mod
         var harmony = new Harmony(ModManifest.UniqueID);
         harmony.Patch(
             original: AccessTools.Method(typeof(Event), nameof(Event.exitEvent)),
-            postfix: new HarmonyMethod(typeof(AddEvaluation1MailPatch), nameof(AddEvaluation1MailPatch.Postfix))
+            postfix: new HarmonyMethod(typeof(AddEvaluationMailPatch), nameof(AddEvaluationMailPatch.Postfix))
         );
         if (_config.EnableAlwaysActiveShrinePatch)
         {
@@ -80,26 +80,31 @@ public class ModEntry : Mod
             RenameKey(data, origEvaluation1Key, newEvaluation1Key);
             // Subsequent Grandpa evaluations: 558292
             const string origEvaluation2Key = "558292/e 321777/t 600 620/H";
-            const string newEvaluation2Key = $"558292/e 321777/t 600 620/Hn {AddEvaluation1MailPatch.Evaluation1Mail}/H";
+            const string newEvaluation2Key = $"558292/e 321777/t 600 620/HostMail {AddEvaluationMailPatch.Evaluation1Mail}/H";
+            const string newEvaluation2KeyVanilla = $"558292/e 321777/t 600 620/!HostMail {AddEvaluationMailPatch.Evaluation2Mail}/H";
             if (_config?.SkippableEvaluation2 ?? false) PrependEventCommand(data, origEvaluation2Key, "skippable");
-            RenameKey(data, origEvaluation2Key, newEvaluation2Key);
+            RenameKey(data, origEvaluation2Key, newEvaluation2Key, newEvaluation2KeyVanilla);
             // Diamond placed on shrine marks 321777 as seen
         });
     }
 
-    private void RenameKey<TKey, TValue>(IDictionary<TKey, TValue> data, TKey oldKey, TKey newKey)
+    private void RenameKey<TKey, TValue>(IDictionary<TKey, TValue> data, TKey oldKey, params TKey[] newKeys)
     {
         var oldKeyMissing = !data.ContainsKey(oldKey);
-        var newKeyExists = data.ContainsKey(newKey);
+        var newKeyExists = newKeys.Any(data.ContainsKey);
         if (oldKeyMissing || newKeyExists)
         {
-            var m = $"Skipping rename \"{oldKey}\" (missing={oldKeyMissing}) to \"{newKey}\" (exists={newKeyExists})";
+            var m = $"Skipping rename \"{oldKey}\" (missing={oldKeyMissing}) to \"{newKeys}\" (exists={newKeyExists})";
             Monitor.Log(m, LogLevel.Error);
             return;
         }
 
-        data[newKey] = data[oldKey];
+        var value = data[oldKey];
         data.Remove(oldKey);
+        foreach (var newKey in newKeys)
+        {
+            data[newKey] = value;
+        }
     }
 
     private void PrependEventCommand(IDictionary<string, string> data, string eventKey, string eventCommand)
