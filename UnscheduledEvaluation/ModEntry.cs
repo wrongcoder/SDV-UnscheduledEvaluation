@@ -10,8 +10,6 @@ namespace UnscheduledEvaluation;
 
 public class ModEntry : Mod
 {
-    private const string Evaluation1Mail = "UnscheduledEvaluation-SawEvaluation1";
-
     private ModConfig? _config;
 
     public override void Entry(IModHelper helper)
@@ -19,6 +17,10 @@ public class ModEntry : Mod
         _config = Helper.ReadConfig<ModConfig>();
 
         var harmony = new Harmony(ModManifest.UniqueID);
+        harmony.Patch(
+            original: AccessTools.Method(typeof(Event), nameof(Event.exitEvent)),
+            postfix: new HarmonyMethod(typeof(AddEvaluation1MailPatch), nameof(AddEvaluation1MailPatch.Postfix))
+        );
         if (_config.EnableAlwaysActiveShrinePatch)
         {
             harmony.Patch(
@@ -75,11 +77,10 @@ public class ModEntry : Mod
             const string origEvaluation1Key = "558291/y 3/H";
             const string newEvaluation1Key = "558291/e 321777/t 600 620/H";
             if (_config?.SkippableEvaluation1 ?? false) PrependEventCommand(data, origEvaluation1Key, "skippable");
-            PrependEventCommand(data, origEvaluation1Key, $"mail {Evaluation1Mail}");
             RenameKey(data, origEvaluation1Key, newEvaluation1Key);
             // Subsequent Grandpa evaluations: 558292
             const string origEvaluation2Key = "558292/e 321777/t 600 620/H";
-            const string newEvaluation2Key = $"558292/e 321777/t 600 620/Hn {Evaluation1Mail}/H";
+            const string newEvaluation2Key = $"558292/e 321777/t 600 620/Hn {AddEvaluation1MailPatch.Evaluation1Mail}/H";
             if (_config?.SkippableEvaluation2 ?? false) PrependEventCommand(data, origEvaluation2Key, "skippable");
             RenameKey(data, origEvaluation2Key, newEvaluation2Key);
             // Diamond placed on shrine marks 321777 as seen
