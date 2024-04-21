@@ -1,10 +1,13 @@
 {
-  "Name": "UnscheduledEvaluation",
+  "Name": "Unscheduled Evaluation",
   "Author": "wrongcoder",
-  "Version": "0.1.0",
+  "Version": "0.1.1-dev",
   "Description": "Grandpa will only evaluate your farm on request.",
   "UniqueID": "wrongcoder.UnscheduledEvaluation",
   "EntryDll": "UnscheduledEvaluation.dll",
   "MinimumApiVersion": "4.0.0",
-  "UpdateKeys": []
+  "UpdateKeys": [
+    "Nexus:22752",
+    "GitHub:wrongcoder/UnscheduledEvaluation"
+  ]
 }
